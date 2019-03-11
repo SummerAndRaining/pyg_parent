@@ -54,7 +54,7 @@
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-default" title="新建"  data-toggle="modal" data-target="#editModal" ng-click="entity={customAttributeItems:[]}"><i class="fa fa-file-o"></i> 新建</button>
                                         <button type="button" class="btn btn-default" ng-click="dele()" title="删除"><i class="fa fa-trash-o"></i> 删除</button>
-                                       
+										<button type="button" class="btn btn-default" title="新建" data-toggle="modal" data-target="#editModal01" ng-click="entity={}"><i class="fa fa-file-o"></i> 导入</button>
                                         <button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();"><i class="fa fa-refresh"></i> 刷新</button>
                                     </div>
                                 </div>
@@ -184,7 +184,33 @@
 	  </div>
 	</div>
 </div>
-    
+
+  <div class="modal fade" id="editModal01" tabindex="-1" role="dialog" aria-labelledby="myModalLabel01" aria-hidden="true">
+	  <div class="modal-dialog" >
+		  <div class="modal-content">
+			  <div class="modal-header">
+				  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				  <h3 id="myModalLabel01">导入</h3>
+			  </div>
+			  <div class="modal-body">
+				  <table class="table table-bordered table-striped"  width="800px">
+
+					  <tr>
+
+						  <td>传入模板的 Excel文件</td>
+
+						  <td>
+							  <input type="file" id="file"/>
+							  <input type="button" value="上传" ng-click="uploadFile()"/>
+
+						  </td>
+
+					  </tr>
+				  </table>
+			  </div>
+		  </div>
+	  </div>
+  </div>
 </body>
 
 </html>

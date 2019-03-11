@@ -8,11 +8,23 @@
     <title>设置-个人信息</title>
      <link rel="icon" href="/assets/img/favicon.ico">
 
-    <link rel="stylesheet" type="text/css" href="css/webbase.css" />
-    <link rel="stylesheet" type="text/css" href="css/pages-seckillOrder.css" />
+	<link rel="stylesheet" type="text/css" href="css/webbase.css" />
+	<link rel="stylesheet" type="text/css" href="css/pages-seckillOrder.css" />
+
+	<script type="text/javascript" src="plugins/angularjs/angular.min.js"></script>
+	<script type="text/javascript" src="js/base.js"></script>
+	<script type="text/javascript" src="js/service/loginService.js"></script>
+	<script type="text/javascript" src="js/controller/userController.js"></script>
+
+	<!-- 引入模块以及控制器-->
+	<script type="text/javascript" src="js/controller/baseController.js"></script>
+	<script type="text/javascript" src="js/service/userService.js"></script>
+	<script type="text/javascript" src="js/service/uploadService.js"></script>
+	<script type="text/javascript" src="js/plugins/moment/moment.min.js"></script>
+	<script type="text/javascript" src="../js/service/uploadService.js"></script>
 </head>
 
-<body>
+<body ng-app="pinyougou" ng-controller="userController" ng-init="showName();findUser()">
     <!-- 头部栏位 -->
     <!--页面顶部-->
 <div id="nav-bottom">
@@ -149,11 +161,11 @@ $(function(){
 <script type="text/javascript" src="js/pages/main.js"></script>
 <script>
             $(function() {               
-                $.ms_DatePicker({
-                    YearSelector: "#select_year2",
-                    MonthSelector: "#select_month2",
-                    DaySelector: "#select_day2"
-                });
+                // $.ms_DatePicker({
+                //     YearSelector: "#select_year2",
+                //     MonthSelector: "#select_month2",
+                //     DaySelector: "#select_day2"
+                // });
             });
         </script>
 </body>
@@ -167,7 +179,7 @@ $(function(){
                     <div class="person-info">
                         <div class="person-photo"><img src="img/_/photo.png" alt=""></div>
                         <div class="person-account">
-                            <span class="name">Michelle</span>
+                            <span class="name">{{loginName}}</span>
                             <span class="safe">账户安全</span>
                         </div>
                         <div class="clearfix"></div>
@@ -204,32 +216,33 @@ $(function(){
                             <li class="active"><a href="#one" data-toggle="tab">基本资料</a></li>
                             <li><a href="#two" data-toggle="tab">头像照片</a></li>
                         </ul>
-                        <div class="tab-content ">
+
+                        <div class="tab-content " >
                             <div id="one" class="tab-pane active">
                                 <form id="form-msg" class="sui-form form-horizontal">
                                     <div class="control-group">
                                         <label for="inputName" class="control-label">昵称：</label>
                                         <div class="controls">
-                                            <input type="text" id="inputName" name="email" placeholder="昵称">
+                                            <input type="text" id="inputName" ng-model="userInfo.nickName" name="nickName" placeholder={{userInfo.nickName}} value="{{userInfo.nickName}}">
                                         </div>
                                     </div>
                                     <div class="control-group">
-                                        <label for="inputGender" class="control-label">性别：</label>
+                                        <label for="inputGender" class="control-label" >性别：</label>
                                         <div class="controls">
                                             <label data-toggle="radio" class="radio-pretty inline">
-                                            <input type="radio" name="gender" value="1"><span>男</span>
+                                            <input type="radio" name="gender" value="1" ng-model="userInfo.sex"><span>男</span>
                                         </label>
                                             <label data-toggle="radio" class="radio-pretty inline">
-                                            <input type="radio" name="gender" value="2"><span>女</span>
+                                            <input type="radio" name="gender" value="2" ng-model="userInfo.sex"><span>女</span>
                                         </label>
                                         </div>
                                     </div>
                                     <div class="control-group">
                                         <label for="inputPassword" class="control-label">生日：</label>
                                         <div class="controls">
-                                            <select id="select_year2" rel="1990"></select>年
-                                            <select id="select_month2" rel="4"></select>月
-                                            <select id="select_day2" rel="3"></select>日
+                                            <select id="select_year2" rel="{{year}}" ></select>年
+                                            <select id="select_month2" rel="{{month}}" ></select>月
+                                            <select id="select_day2" rel="{{day}}" ></select>日
                                         </div>
                                     </div>
 
@@ -266,7 +279,7 @@ $(function(){
                                     <div class="control-group">
                                         <label for="sanwei" class="control-label"></label>
                                         <div class="controls">
-                                            <button type="submit" class="sui-btn btn-primary">立即注册</button>
+                                            <button type="submit" ng-click="updateUser()" class="sui-btn btn-primary" >保存</button>
                                         </div>
                                     </div>
                                 </form>

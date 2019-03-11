@@ -28,5 +28,21 @@ app.service('typeTemplateService',function($http){
 	//搜索
 	this.search=function(page,rows,searchEntity){
 		return $http.post('../typeTemplate/search.do?page='+page+"&rows="+rows, searchEntity);
-	}    	
+	}
+
+    this.uploadFile = function(){
+        // 向后台传递数据:
+        var form = new FormData();
+        // 向formData中添加数据:
+        var file = document.getElementById("file").files[0];
+        form.append('file', file);
+
+        $http({
+            method:'post',
+            url:'../uploadTemplate/uploadFile.do',
+            data:form,
+            headers:{'Content-Type':undefined} ,// Content-Type : text/html  text/plain
+            transformRequest: angular.identity
+        })
+    }
 });

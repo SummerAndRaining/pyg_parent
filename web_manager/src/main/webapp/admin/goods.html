@@ -26,6 +26,14 @@
     <script type="text/javascript" src="../js/controller/goodsController.js"></script>
     <script type="text/javascript" src="../js/service/goodsService.js"></script>
     <script type="text/javascript" src="../js/service/itemCatService.js"></script>
+    <script type="text/javascript">
+        function exportExcel(){
+            pro_id=$("#pro_id").val();
+            pro_name=$("#pro_name").val();
+            location.href="/export/exportexcel.do";
+//不能使用ajax,文件下载的请求是不能写在ajax里面的！
+        }
+    </script>
 </head>
 
 <body class="hold-transition skin-red sidebar-mini" ng-app="pinyougou" ng-controller="goodsController" ng-init="searchEntity={auditStatus:'0'};findItemCatList()">
@@ -46,8 +54,13 @@
                                     <div class="btn-group">
                                         <button type="button" ng-click="dele()" class="btn btn-default" title="删除" ><i class="fa fa-trash-o"></i> 删除</button>
                                         <button type="button" ng-click="updateStatus('1')" class="btn btn-default" title="审核通过" ><i class="fa fa-check"></i> 审核通过</button>
-                                        <button type="button" ng-click="updateStatus('2')" class="btn btn-default" title="驳回" ><i class="fa fa-ban"></i> 驳回</button>                                  
+                                        <button type="button" ng-click="updateStatus('2')" class="btn btn-default" title="驳回" ><i class="fa fa-ban"></i> 驳回</button>
                                         <button type="button" class="btn btn-default" title="刷新" ><i class="fa fa-refresh"></i> 刷新</button>
+                                        <!--<a href="http://localhost:8081/admin/export/exportexcel">导出Excel表格内容</a>-->
+                                        <button class="btn  btn-success btn-sm"  onclick="exportExcel()">
+                                            <i class="icon-zoom-in align-top bigger-110">导出Excel</i>
+                                        </button>
+
                                     </div>
                                 </div>
                             </div>
@@ -107,6 +120,8 @@
                         
                      </div>
                     <!-- /.box-body -->
+
+
         
 </body>
 

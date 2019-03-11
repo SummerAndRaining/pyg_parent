@@ -2,9 +2,11 @@ package cn.itcast.core.service;
 
 import cn.itcast.core.common.Constants;
 import cn.itcast.core.dao.ad.ContentDao;
+import cn.itcast.core.dao.item.ItemCatDao;
 import cn.itcast.core.pojo.ad.Content;
 import cn.itcast.core.pojo.ad.ContentQuery;
 import cn.itcast.core.pojo.entity.PageResult;
+import cn.itcast.core.pojo.item.ItemCat;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -23,6 +25,9 @@ public class ContentServiceImpl implements  ContentService{
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private ItemCatDao itemCatDao;
 
     @Override
     public PageResult search(Integer page, Integer rows, Content content) {
@@ -95,5 +100,25 @@ public class ContentServiceImpl implements  ContentService{
             return contentList;
         }
 
+    }
+
+    //楼层广告展示
+    @Override
+    public List<ItemCat> findItemCatList() {
+        List<ItemCat> itemCatList = (List<ItemCat>) redisTemplate.boundHashOps("itemCat").get("indexItemCat");
+        if (itemCatList==null){
+            List<ItemCat> itemCatList1 = itemCatDao.findItemCatListByParentId(0L);
+            for (ItemCat itemCat1 : itemCatList1) {
+                List<ItemCat> itemCatList2 = itemCatDao.findItemCatListByParentId(itemCat1.getId());
+                for (ItemCat itemCat2 : itemCatList2) {
+                    List<ItemCat> itemCatList3 = itemCatDao.findItemCatListByParentId(itemCat2.getId());
+                    itemCat2.setItemCatList(itemCatList3);
+                }
+                itemCat1.setItemCatList(itemCatList2);
+            }
+            redisTemplate.boundHashOps("itemCat").put("indexItemCat",itemCatList1);
+            return itemCatList1;
+        }
+        return  itemCatList;
     }
 }

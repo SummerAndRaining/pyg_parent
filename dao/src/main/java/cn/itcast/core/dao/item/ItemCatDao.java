@@ -27,4 +27,7 @@ public interface ItemCatDao {
     int updateByPrimaryKeySelective(ItemCat record);
 
     int updateByPrimaryKey(ItemCat record);
+
+    //分层广告
+    List<ItemCat> findItemCatListByParentId(@Param("parentId") Long parentId);
 }

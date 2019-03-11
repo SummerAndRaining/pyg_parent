@@ -1,5 +1,20 @@
 //购物车服务层
 app.service('cartService',function($http){
+
+
+	//添加关注
+    this.addGoodsToLikeFromCart=function(itemId){
+        return $http.get('cart/addGoodsToLikeFromCart.do?itemId='+itemId);
+    }
+    //是否限制登录,冻结
+	this.isCold=function () {
+        return $http.get('coldLogin/isCold.do?');
+    }
+    //注销登录
+    this.loginOutCold=function () {
+        return $http.get('coldLogin/isCold.do?');
+    }
+
 	//购物车列表
 	this.findCartList=function(){
 		return $http.get('cart/findCartList.do');

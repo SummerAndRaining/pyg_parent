@@ -1,5 +1,34 @@
 //购物车控制层
 app.controller('cartController',function($scope,cartService){
+	//购物车移到关注
+    $scope.addGoodsToLikeFromCart=function (itemId) {
+    	if (confirm("移到关注后可在我的关注中查看")){
+        cartService.addGoodsToLikeFromCart(itemId).success(
+         	function(response){
+         	    if(response.success){//如果成功
+         	        location="http://localhost:8080/cart.html";
+         	    }else{
+         	        alert(response.message);
+                    location="http://localhost:8080/login.html";//跳转到登录页面
+         	    }
+         	}
+		)
+    }}
+    //限制登录
+    $scope.isCold = function () {
+        cartService.isCold().success(
+            function (response) {
+                if (response.success) {//如果成功
+                } else {
+                    alert("用户已被冻结!");
+                    location = "http://192.168.200.128:9100/cas/logout?service=http://localhost:8080/login.html";
+                }
+            }
+        )
+
+    }
+
+
 	//查询购物车列表
 	$scope.findCartList=function(){
 		cartService.findCartList().success(

@@ -1,9 +1,11 @@
 package cn.itcast.core.service;
 
 import cn.itcast.core.common.Constants;
+import cn.itcast.core.dao.seller.SellerDao;
 import cn.itcast.core.dao.specification.SpecificationOptionDao;
 import cn.itcast.core.dao.template.TypeTemplateDao;
 import cn.itcast.core.pojo.entity.PageResult;
+import cn.itcast.core.pojo.seller.Seller;
 import cn.itcast.core.pojo.specification.SpecificationOption;
 import cn.itcast.core.pojo.specification.SpecificationOptionQuery;
 import cn.itcast.core.pojo.template.TypeTemplate;
@@ -16,8 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -31,6 +35,9 @@ public class TemplateServiceImpl implements TemplateService {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private SellerDao sellerDao;
 
     @Override
     public PageResult findPage(Integer page, Integer rows, TypeTemplate template) {
@@ -60,12 +67,12 @@ public class TemplateServiceImpl implements TemplateService {
         TypeTemplateQuery.Criteria criteria = query.createCriteria();
         if (template != null) {
             if (template.getName() != null && !"".equals(template.getName())) {
-                criteria.andNameLike("%"+template.getName()+"%");
+                criteria.andNameLike("%" + template.getName() + "%");
             }
         }
 
         PageHelper.startPage(page, rows);
-        Page<TypeTemplate> templateList = (Page<TypeTemplate>)templateDao.selectByExample(query);
+        Page<TypeTemplate> templateList = (Page<TypeTemplate>) templateDao.selectByExample(query);
         return new PageResult(templateList.getTotal(), templateList.getResult());
     }
 
@@ -94,6 +101,24 @@ public class TemplateServiceImpl implements TemplateService {
     }
 
     @Override
+    public void importExcel(String[][] strings) {
+        for(int i=0;i<strings.length;i++){
+            TypeTemplate template = new TypeTemplate();
+//            template.setId(Long.valueOf(strings[i][0]));
+            template.setName(strings[i][1]);
+            template.setSpecIds(strings[i][2]);
+            template.setBrandIds(strings[i][3]);
+            template.setCustomAttributeItems(strings[i][4]);
+//            System.out.println(template);
+            templateDao.insertSelective(template);
+
+            //userService.save(user, null);//这是一个添加方法，dao层写入sql语句即可
+        }
+
+
+    }
+
+    @Override
     public List<Map> findBySpecList(Long id) {
         //1. 根据模板id查询模板对象
         TypeTemplate typeTemplate = templateDao.selectByPrimaryKey(id);
@@ -116,7 +141,99 @@ public class TemplateServiceImpl implements TemplateService {
 
             }
         }
-
         return specList;
     }
+
+    //从redis中获取当前用户所有未审核通过的模板数据
+    @Override
+    public List<TypeTemplate> shopFindFromRedis(String userName) {
+        List<TypeTemplate> typeTemplateList = (List<TypeTemplate>) redisTemplate.boundHashOps(Constants.APPLY_TEMPLATE_LIST).get(userName);
+        if (typeTemplateList == null) {
+            typeTemplateList = new ArrayList<TypeTemplate>();
+        }
+        return typeTemplateList;
+    }
+
+    //根据用户名将模板集合存入到redis中
+    @Override
+    public void putTemplateListByUserName(String userName, List<TypeTemplate> typeTemplateList) {
+        redisTemplate.boundHashOps(Constants.APPLY_TEMPLATE_LIST).put(userName,typeTemplateList);
+    }
+
+    //模板申请
+    @Override
+    public void addTemplateFromShop(TypeTemplate typeTemplate, String userName) {
+        List<TypeTemplate> templateList = (List<TypeTemplate>) redisTemplate.boundHashOps(Constants.APPLY_TEMPLATE_LIST).get(userName);
+        if (templateList != null) {
+            templateList.add(typeTemplate);
+        } else {
+            templateList = new ArrayList<>();
+            templateList.add(typeTemplate);
+        }
+        redisTemplate.boundHashOps(Constants.APPLY_TEMPLATE_LIST).put(userName, templateList);
+    }
+
+    //从redis中查询所有商家的模板数据
+    @Override
+    public List<TypeTemplate> findAll() {
+        //定义一个集合,用于存储所有商家的所有模板集合
+        Map<String, List<TypeTemplate>> allApplyTypeMap = redisTemplate.boundHashOps(Constants.APPLY_TEMPLATE_LIST).entries();
+        Set<Map.Entry<String, List<TypeTemplate>>> entries = allApplyTypeMap.entrySet();
+        List<TypeTemplate> allApplyTemplateEntityList = new ArrayList<>();
+
+        if (entries != null && entries.size() > 0) {
+            for (Map.Entry<String, List<TypeTemplate>> entry : entries) {
+                String userName = entry.getKey();
+                List<TypeTemplate> typeTemplates = entry.getValue();
+                if (typeTemplates != null && typeTemplates.size() > 0) {
+                    for (TypeTemplate typeTemplate : typeTemplates) {
+                        allApplyTemplateEntityList.add(typeTemplate);
+                    }
+                }
+            }
+        }
+        return allApplyTemplateEntityList;
+    }
+
+    //审核商家模板
+    @Override
+    public void updateStatus(String[] names) {
+        //1从redis中获取所有的用户及对应要申请的muban
+
+        if (names != null) {
+
+            //获取所有的用户名
+            List<Seller> sellers = sellerDao.selectByExample(null);
+            if (sellers != null) {
+                //遍历用户名
+                for (Seller seller : sellers) {
+                    //获取每个用户在redis的模板集合
+                    List<TypeTemplate> typeTemplateList = (List<TypeTemplate>) redisTemplate.boundHashOps(Constants.APPLY_TEMPLATE_LIST).get(seller.getSellerId());
+                    List<TypeTemplate> arrayList = new ArrayList<>();
+                    //遍历模板集合
+                    if (typeTemplateList != null && typeTemplateList.size() > 0) {
+                        for (TypeTemplate typeTemplate : typeTemplateList) {
+                            for (String name : names) {
+                                if (typeTemplate.getName().equals(name)) {
+                                    templateDao.insertSelective(typeTemplate);
+
+                                    arrayList.add(typeTemplate);
+                                }
+//                            typeTemplateList.remove(typeTemplate);
+                            }
+                        }
+                        for (TypeTemplate typeTemplate : arrayList) {
+                            typeTemplateList.remove(typeTemplate);
+                        }
+                        if (typeTemplateList.size() > 0) {
+                            redisTemplate.boundHashOps(Constants.APPLY_TEMPLATE_LIST).put(seller.getSellerId(), typeTemplateList);
+                        } else {
+                            redisTemplate.boundHashOps(Constants.APPLY_TEMPLATE_LIST).delete(seller.getSellerId());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }

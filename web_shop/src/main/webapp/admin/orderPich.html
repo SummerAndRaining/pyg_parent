@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>销售统计</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../plugins/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../plugins/adminLTE/css/AdminLTE.css">
+    <link rel="stylesheet" href="../plugins/adminLTE/css/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../plugins/jQuery/jquery-2.2.3.min.js"></script>
+    <script src="../plugins/bootstrap/js/bootstrap.min.js"></script>
+
+    <!--导入echarts数据表插件-->
+    <script src="../js/ECharts/echarts.js"></script>
+
+    <!-- 引入angular的js -->
+    <script type="text/javascript" src="../plugins/angularjs/angular.min.js"></script>
+    <!-- 引入分页相关的JS和CSS -->
+    <script type="text/javascript" src="../plugins/angularjs/pagination.js"></script>
+    <link rel="stylesheet" href="../plugins/angularjs/pagination.css">
+
+    <script type="text/javascript" src="../js/base_pagination.js"></script>
+    <script type="text/javascript" src="../js/controller/baseController.js"></script>
+    <script type="text/javascript" src="../js/controller/seckil.js"></script>
+    <script type="text/javascript" src="../js/service/seckilservice.js"></script>
+    <script type="text/javascript" src="../js/service/itemCatService.js"></script>
+</head>
+
+<body class="hold-transition skin-red sidebar-mini" ng-app="pinyougou" ng-controller="seckil"
+      ng-init="">
+
+<!-- .box-body -->
+
+<div class="box-header with-border">
+    <h3 class="box-title">销售折线图</h3>
+</div>
+
+<div class="box-body">
+
+    <div>
+        <input type="date" value="" id="startDate">
+    </div>
+    <div>
+        <input type="date" value="" id="endDate">
+    </div>
+    <div>
+        <input type="button" id="getdata" value="获取数据"/>
+    </div>
+
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="main" style="width: 600px;height:400px; margin: 30px auto" ></div>
+    <script type="text/javascript">
+        $(function () {
+
+            $("#getdata").click(function () {
+                var startDate = $("#startDate").val();
+                var endDate = $("#endDate").val();
+                startDate = startDate.split("-").join("/");
+                endDate = endDate.split("-").join("/");
+                $.ajax({
+                    type: "GET",
+                    url: "http://localhost:8082/sales_volume/findShopVolume.do",
+                    data: {startDate: startDate, endDate: endDate},
+                    dataType: "json",
+                    success: function (data) {
+
+                        showLine(data.time, data.salesVolumeList);
+                    }
+                });
+            });
+        });
+
+        function showLine(time, salesVolumeList) {
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('main'));
+
+            // 指定图表的配置项和数据
+            var option = {
+
+                title : {
+                    text: '日销售量统计',
+                    subtext: '每日销量'
+                },
+
+                legend: {
+                    data:['销售量']
+                },
+
+                tooltip : {
+                    trigger: 'axis'
+                },
+
+
+                toolbox: {
+                    show : true,
+                    feature : {
+                        mark : {show: true},
+                        dataView : {show: true, readOnly: false},
+                        magicType : {show: true, type: ['line', 'bar']},
+                        restore : {show: true},
+                        saveAsImage : {show: true}
+                    }
+                },
+                calculable : true,
+                xAxis: {
+                    type: 'category',
+                    boundaryGap : false,
+                    data: time
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel : {
+                        formatter: '{value} 件'
+                    }
+                },
+                series: [
+                    {
+                        name: '销售量',
+                        data: salesVolumeList,//[820, 932, 901, 934, 1290, 1330, 1320],
+                        type: 'line',
+                        markPoint : {
+                            data : [
+                                {type : 'max', name: '最大值'},
+                                {type : 'min', name: '最小值'}
+                            ]
+                        },
+                        markLine : {
+                            data : [
+                                {type : 'average', name: '平均值'}
+                            ]
+                        }
+
+                    },
+                ]
+            };
+
+
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+
+        };
+
+    </script>
+
+
+</div>
+<!-- /.box-body -->
+
+
+</body>
+
+</html>

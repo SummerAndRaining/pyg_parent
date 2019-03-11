@@ -25,4 +25,10 @@ public class ItemCatController {
     public List<ItemCat> findAll() {
         return itemCatService.findAll();
     }
+
+    @RequestMapping("/findAllRedisItemCat")
+    public List<ItemCat> findAllRedisItemCat(){
+        List<ItemCat> allApplyItemCatList = itemCatService.findAllApplyItemCatList();
+        return allApplyItemCatList;
+    }
 }

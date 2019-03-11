@@ -1,10 +1,18 @@
 package cn.itcast.core.service;
 
 import cn.itcast.core.pojo.entity.BuyerCart;
+import cn.itcast.core.pojo.entity.Result;
 
 import java.util.List;
 
 public interface BuyerCartService {
+
+    /**
+     * 购物车列表中添加到我的关注
+     * @param itemId 库存id
+     * @return
+     */
+    public void addGoodsToLikeFromCart(Long itemId, String username);
 
     /**
      * 将购买的商品加入到用户当前所拥有的购物车列表中

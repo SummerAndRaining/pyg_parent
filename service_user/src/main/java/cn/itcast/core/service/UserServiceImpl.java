@@ -1,7 +1,9 @@
 package cn.itcast.core.service;
 
 import cn.itcast.core.dao.user.UserDao;
+import cn.itcast.core.pojo.order.Order;
 import cn.itcast.core.pojo.user.User;
+import cn.itcast.core.pojo.user.UserQuery;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
 import org.apache.activemq.command.ActiveMQMapMessage;
@@ -17,7 +19,9 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.Session;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -96,4 +100,72 @@ public class UserServiceImpl implements UserService {
         long s = (long)(Math.random() * 1000000);
         System.out.println("=======" + s);
     }
+
+
+    /**
+     * 根据登录用户查询登录用户信息
+     * @param userName
+     * @return
+     */
+    @Override
+    public User findUser(String userName) {
+
+        UserQuery userQuery = new UserQuery();
+        UserQuery.Criteria criteria = userQuery.createCriteria();
+        criteria.andUsernameEqualTo(userName);
+        List<User> userList = userDao.selectByExample(userQuery);
+
+        if(userList!=null && userList.size()>0){
+            return userList.get(0);
+        }else {
+            return new User();
+        }
+
+    }
+
+    /**
+     * 个人信息修改
+     * @param user
+     */
+    @Override
+    public void updateUser(User user) {
+
+
+        //新建user对象,根据网页传入过来的值,对新建的user重新赋值更新到数据库
+        //这样重新赋值部分的话,不会影响数据库user的创建时间和其它的值
+        User dbUser = findUser(user.getUsername());
+
+        dbUser.setNickName(user.getNickName());
+        dbUser.setSex(user.getSex());
+        dbUser.setBirthday(user.getBirthday());
+        //个人信息修改时间
+        dbUser.setUpdated(new Date());
+
+        //创建查询对象
+        UserQuery userQuery = new UserQuery();
+        //创建查询条件
+        UserQuery.Criteria criteria = userQuery.createCriteria();
+        criteria.andUsernameEqualTo(user.getUsername());
+        //更新保存个人信息
+        userDao.updateByExample(dbUser,userQuery);
+
+    }
+
+
+    //新增收货人信息
+   /* @Override
+    public void addUserAddress(Address address) {
+
+        addressDao.insertSelective(address);
+
+    }*/
+
+
+
+
+    public List<Order> findAll(String userName) {
+        return null;
+    }
+
+
 }

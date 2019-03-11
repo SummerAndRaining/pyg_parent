@@ -530,4 +530,9 @@
       seller_id = #{sellerId,jdbcType=VARCHAR}
     where order_id = #{orderId,jdbcType=BIGINT}
   </update>
+
+  <select id="countOrder" resultType="java.util.Map"> /*查询一个用户有多少个订单*/
+    select u.username,count(*) as count from tb_order o,tb_user u where u.username=o.user_id group by u.username ORDER BY COUNT desc
+  </select>
+
 </mapper>

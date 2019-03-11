@@ -1,6 +1,7 @@
 package cn.itcast.core.controller;
 
 import cn.itcast.core.pojo.ad.Content;
+import cn.itcast.core.pojo.item.ItemCat;
 import cn.itcast.core.service.ContentService;
 import com.alibaba.dubbo.config.annotation.Reference;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,5 +19,11 @@ public class ContentController {
     @RequestMapping("/findByCategoryId")
     public List<Content> findByCategoryId(Long categoryId) {
         return contentService.findByCategoryIdFromRedis(categoryId);
+    }
+
+    @RequestMapping("findItemCatList")
+    public List<ItemCat> findItemCatList(){
+        List<ItemCat> itemCatList = contentService.findItemCatList();
+        return itemCatList;
     }
 }

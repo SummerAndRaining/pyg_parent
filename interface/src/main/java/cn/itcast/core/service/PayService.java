@@ -27,4 +27,7 @@ public interface PayService {
      * @return
      */
     public PayLog findPageLogFromRedis(String userName);
+
+    //关闭支付接口
+    public Map  closePay(String out_trade_no);
 }

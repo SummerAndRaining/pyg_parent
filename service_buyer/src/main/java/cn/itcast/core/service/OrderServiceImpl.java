@@ -2,22 +2,30 @@ package cn.itcast.core.service;
 
 import cn.itcast.core.common.Constants;
 import cn.itcast.core.common.IdWorker;
+import cn.itcast.core.dao.item.ItemDao;
 import cn.itcast.core.dao.log.PayLogDao;
 import cn.itcast.core.dao.order.OrderDao;
 import cn.itcast.core.dao.order.OrderItemDao;
+import cn.itcast.core.dao.seller.SellerDao;
 import cn.itcast.core.pojo.entity.BuyerCart;
+import cn.itcast.core.pojo.entity.PageResult;
+import cn.itcast.core.pojo.item.Item;
 import cn.itcast.core.pojo.log.PayLog;
 import cn.itcast.core.pojo.order.Order;
 import cn.itcast.core.pojo.order.OrderItem;
+import cn.itcast.core.pojo.order.OrderItemQuery;
+import cn.itcast.core.pojo.order.OrderQuery;
+import cn.itcast.core.pojo.seller.Seller;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Transactional
@@ -38,6 +46,11 @@ public class OrderServiceImpl implements  OrderService {
     @Autowired
     private IdWorker idWorker;
 
+    @Autowired
+    private SellerDao sellerDao;
+
+    @Autowired
+    private ItemDao itemDao;
 
     @Override
     public void add(Order pageOrder) {
@@ -140,8 +153,192 @@ public class OrderServiceImpl implements  OrderService {
             }
         }
 
-
         //5. 根据用户名清除redis中未支付的支付日志对象
         redisTemplate.boundHashOps(Constants.REDIS_PAYLOG).delete(payLog.getUserId());
+    }
+
+    //杨涛-------------------------杨涛-----------------------商家后台-订单查询
+//    @Override
+//    public PageResult search(Integer page, Integer rows,Order order) {
+//        String seller_id = SecurityContextHolder.getContext().getAuthentication().getName();
+//        System.out.println(seller_id);
+//        PageHelper.startPage(page,rows);
+//        OrderQuery query = new OrderQuery();
+//        OrderQuery.Criteria criteria = query.createCriteria();
+//        criteria.andSellerIdEqualTo(order.getSellerId());
+//        Page<Order> ordersList = (Page<Order>) orderDao.selectByExample(query);
+//        return new PageResult(ordersList.getTotal(),ordersList.getResult());
+////        Page<Brand> brandList = (Page<Brand>)brandDao.selectByExample(query);
+////        return new PageResult(brandList.getTotal(), brandList.getResult());
+//    }
+
+    @Override
+    public List<Order> findOrderFromSeller(String username) {
+        OrderQuery query = new OrderQuery();
+        OrderQuery.Criteria criteria = query.createCriteria();
+        criteria.andSellerIdEqualTo(username);
+
+        List<Order> orders = orderDao.selectByExample(query);
+        for (Order order : orders) {
+            System.out.println(order.getOrderId());
+        }
+        return orders;
+    }
+
+    //发货
+    @Override
+    public void update(Long id) {
+        Order order = new Order();
+        order.setOrderId(id);
+        order.setStatus("4");
+        System.out.println("========"+order.getOrderId());
+        orderDao.updateByPrimaryKeySelective(order);
+    }
+
+    //杨涛------------------------杨涛------------------------商家后台-订单查询
+
+    @Override
+    public List<Order> getList() {
+        List<Order> orders = orderDao.selectByExample(null);
+        return orders;
+
+    }
+
+//    //根据用户名,查询所有订单
+//    @Override
+//    public List<Order> findAll(String userName) {
+//
+//        List<Order> buyerCartList = new ArrayList<>();
+//
+//
+//        //根据登录用户id,查询所有订单信息
+//        OrderQuery orderQuery = new OrderQuery();
+//        OrderQuery.Criteria criteria = orderQuery.createCriteria();
+//        criteria.andUserIdEqualTo(userName);
+//        List<Order> orders = orderDao.selectByExample(orderQuery);
+//
+//        if(orders!=null){
+//            for (Order order : orders) {
+//                BuyerCart buyerCart = new BuyerCart();
+//                Long orderId = order.getOrderId();
+//
+//                //根据订单id信息查询对应的orderItemList
+//                OrderItemQuery orderItemQuery = new OrderItemQuery();
+//
+//                OrderItemQuery.Criteria orderItemQueryCriteria = orderItemQuery.createCriteria();
+//                orderItemQueryCriteria.andOrderIdEqualTo(orderId);
+//                List<OrderItem> orderItems = orderItemDao.selectByExample(orderItemQuery);
+//
+//                //获取商家id
+//                String sellerId = order.getSellerId();
+//                //获取商家名称
+//                Seller seller = sellerDao.selectByPrimaryKey(sellerId);
+//                String sellerName = seller.getName();
+//
+//                //根据itemList的itemid查询对应的item
+//
+//                Map<String,String> map=new HashMap<>();
+//                if(orderItems!=null){
+//                    for (OrderItem orderItem : orderItems) {
+//                        Long itemId = orderItem.getItemId();
+//                        //获取规格型号
+//                        Item item = itemDao.selectByPrimaryKey(itemId);
+//                        String spec = item.getSpec();
+//                        String[] split = spec.split(",");
+//                        for (String s : split) {
+//                            String[] split1 = s.split(":");
+//                            map.put(split1[0],split1[1]);
+//                        }
+//
+//                        buyerCart.setSpecMap(map);
+//
+//                    }
+//                }
+//
+//                //重新封装buyerCate信息
+//                buyerCart.setOrderItemList(orderItems);
+//                buyerCart.setSellerName(sellerName);
+//                buyerCart.setSellerId(sellerId);
+//                buyerCart.setOrder(order);
+//
+//
+//
+//                //重新封装buyerCartList;
+//                buyerCartList.add(buyerCart);
+//            }
+//
+//        }
+//
+//
+//        return buyerCartList;
+//    }
+
+    /**
+     * 根据登录用户分页查询所有订单
+     *
+     * @param page
+     * @param rows
+     * @param order
+     * @return
+     */
+    @Override
+    public PageResult search(String userName, Integer page, Integer rows, Order order) {
+        //设置分页条件
+        PageHelper.startPage(page, rows);
+        //根据登录用户查询所有订单
+        //根据登录用户id,查询所有订单信息
+        OrderQuery orderQuery = new OrderQuery();
+        OrderQuery.Criteria criteria = orderQuery.createCriteria();
+        criteria.andUserIdEqualTo(userName);
+        if(null != order && StringUtils.isNotBlank(order.getStatus())){
+            criteria.andStatusEqualTo(order.getStatus());
+        }
+
+        //返回分页查询后的订单 格式
+        Page<Order> orderList = (Page<Order>) orderDao.selectByExample(orderQuery);
+
+        if (orderList != null && orderList.size() > 0) {
+            for (Order order1 : orderList) {
+
+
+                //获取订单 id
+                Long orderId = order1.getOrderId();
+                //根据订单id,查询订单 详情orderItem
+                OrderItemQuery orderItemQuery = new OrderItemQuery();
+                OrderItemQuery.Criteria orderItemQueryCriteria = orderItemQuery.createCriteria();
+                orderItemQueryCriteria.andOrderIdEqualTo(orderId);
+                List<OrderItem> orderItemList = orderItemDao.selectByExample(orderItemQuery);
+
+                if (orderItemList != null && orderItemList.size() > 0) {
+                    for (OrderItem orderItem : orderItemList) {
+                        //根据orderItem里面的itemid获取item对象
+                        Long itemId = orderItem.getItemId();
+                        Item item = itemDao.selectByPrimaryKey(itemId);
+                        String spec = item.getSpec();
+
+
+                        orderItem.setSpecMap(item.getSpecMap());
+                        orderItem.setCostPirce(item.getCostPirce());
+                        orderItem.setMarketPrice(item.getMarketPrice());
+
+                    }
+                }
+
+                //获取order里面的seller_id,
+                String sellerId = order1.getSellerId();
+                //根据商家id,查询商家名称
+                Seller seller = sellerDao.selectByPrimaryKey(sellerId);
+                String sellerNickName = seller.getNickName();
+
+                order1.setSellerNickName(sellerNickName);
+                order1.setOrderItemList(orderItemList);
+
+
+            }
+        }
+
+        //将结果封装到pageResult中返回
+        PageResult pageResult = new PageResult(orderList.getTotal(), orderList.getResult());
+        return pageResult;
     }
 }

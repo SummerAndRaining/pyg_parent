@@ -15,7 +15,7 @@ app.service('typeTemplateService',function($http){
 	}
 	//增加 
 	this.add=function(entity){
-		return  $http.post('../typeTemplate/add.do',entity );
+		return  $http.post('../typeTemplate/addTemplateFromShop.do',entity );
 	}
 	//修改 
 	this.update=function(entity){

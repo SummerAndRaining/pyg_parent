@@ -24,6 +24,53 @@ public class BuyerCartServiceImpl implements BuyerCartService {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    /**
+     * 购物车列表中添加到我的关注
+     * @param itemId 库存id
+     * @param username 用户名
+     * @return
+     */
+    public void addGoodsToLikeFromCart(Long itemId,String username){
+        //1.根据用户名获取购物车列表,取出关注的商品,调用本类方法
+        List<BuyerCart> cartListFromRedis = getCartListFromRedis(username);
+        //2.查询这个购物项
+        Item item = itemDao.selectByPrimaryKey(itemId);
+        //3.添加到redis中用户的喜欢列表中
+        //首先判断是否有喜欢列表
+        List<Item> items = (List<Item>) redisTemplate.boundHashOps(Constants.REDIS_LIKE_LIST).get(username);
+        if (items==null){
+            items = new ArrayList<>();
+            items.add(item);
+        }
+        if (items!=null){
+            items.add(item);
+        }
+        redisTemplate.boundHashOps(Constants.REDIS_LIKE_LIST).put(username,items);
+        //3.遍历这个购物车,找到关注商品,删除这一个购物项
+        for (BuyerCart cart : cartListFromRedis) {
+            List<OrderItem> itemList = cart.getOrderItemList();
+            List<OrderItem> newItemList = new ArrayList<>();
+            for (OrderItem orderItem : itemList) {
+                if (!itemId.equals(orderItem.getItemId())){
+                    newItemList.add(orderItem);
+                }
+            }
+            cart.setOrderItemList(newItemList);
+        }
+
+        List<BuyerCart> newCartList = newCartList = new ArrayList<>();;
+        for (BuyerCart cart : cartListFromRedis) {
+            if (!(cart.getOrderItemList().size()==0)){
+                newCartList.add(cart);
+            }
+        }
+        //重新把购物车集合塞回去
+        redisTemplate.boundHashOps(Constants.REDIS_CART_LIST).put(username,newCartList);
+
+
+
+
+    }
 
     /**
      * 将购买的商品加入到用户当前所拥有的购物车列表中

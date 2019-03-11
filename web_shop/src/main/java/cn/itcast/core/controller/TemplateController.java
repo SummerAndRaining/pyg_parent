@@ -5,6 +5,7 @@ import cn.itcast.core.pojo.entity.Result;
 import cn.itcast.core.pojo.template.TypeTemplate;
 import cn.itcast.core.service.TemplateService;
 import com.alibaba.dubbo.config.annotation.Reference;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,5 +37,27 @@ public class TemplateController {
         return specList;
     }
 
+
+    //显示商家未审核通过模板实体集合数据
+    @RequestMapping("/findAll")
+    public List<TypeTemplate> shopFindFromRedis() {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<TypeTemplate> templateList = templateService.shopFindFromRedis(userName);
+        return templateList;
+    }
+
+    //商家模板申请
+    @RequestMapping("/addTemplateFromShop")
+    public Result addTemplateFromShop(@RequestBody TypeTemplate typeTemplate){
+        try {
+            String name = SecurityContextHolder.getContext().getAuthentication().getName();
+            templateService.addTemplateFromShop(typeTemplate,name);
+            return new Result(true,"商家模板申请成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Result(false,"商家模板申请失败");
+        }
+
+    }
 
 }

@@ -66,4 +66,20 @@ public class GoodsController {
             return new Result(false, "修改失败!");
         }
     }
+
+    @RequestMapping("/delete")
+    public Result delete(Long[] ids) {
+        try {
+            goodsService.dele(ids);
+//            if (ids != null) {
+//                for (Long goodsId : ids) {
+//                    solrManagerService.deleteSolrByGoodsId(goodsId);
+//                }
+//            }
+            return new Result(true, "删除成功!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Result(false, "删除失败!");
+        }
+    }
 }

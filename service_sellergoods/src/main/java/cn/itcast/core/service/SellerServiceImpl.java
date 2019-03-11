@@ -70,4 +70,10 @@ public class SellerServiceImpl implements SellerService {
         seller.setStatus(status);
         sellerDao.updateByPrimaryKeySelective(seller);
     }
+
+    @Override
+    public List<Seller> findAllSeller() {
+        List<Seller> sellers = sellerDao.selectByExample(null);
+        return sellers;
+    }
 }

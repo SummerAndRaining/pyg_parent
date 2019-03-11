@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -34,6 +32,30 @@ public class CartController {
 
     @Autowired
     private HttpServletResponse response;
+
+    /**
+     * 购物车列表中添加到我的关注
+     * @param itemId 库存id
+     * @return
+     */
+    @RequestMapping("/addGoodsToLikeFromCart")
+    public Result addGoodsToLikeFromCart(Long itemId){
+        try {
+            //1.判断用户是否登录
+            String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+            //2.若未登录.则不能移除到关注,提醒登录
+            if (userName==null||userName.equals("anonymousUser")){
+                return new Result(false,"先登录,再关注");
+            }
+            //3.若已登录,则将关注库存从redis中取出,放入到关注的域中,也是redis中,并从将购物项删除
+            cartService.addGoodsToLikeFromCart(itemId,userName);
+            return new Result(true,"关注成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Result(false,"关注失败");
+        }
+
+    }
 
     /**
      * 添加商品到购物车

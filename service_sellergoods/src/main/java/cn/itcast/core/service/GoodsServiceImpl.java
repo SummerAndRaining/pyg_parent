@@ -294,4 +294,11 @@ public class GoodsServiceImpl implements GoodsService {
             itemDao.insertSelective(item);
         }
     }
+
+    @Override
+    public List<Goods> getGoodsList() {
+        List<Goods> goods = goodsDao.selectByExample(null);
+        return goods;
+
+    }
 }

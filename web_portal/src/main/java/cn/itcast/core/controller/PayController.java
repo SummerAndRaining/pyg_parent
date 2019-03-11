@@ -80,8 +80,9 @@ public class PayController {
             flag++;
 
             //半小时后如果还不支付, 则超时, 重新生成二维码, 继续扫描
-            if (flag >= 600) {
-                result  = new Result(false, "二维码超时");
+            if (flag >= 20) {
+                result  = new Result(false, "您已超时,支付接口即将关闭");
+                payService.closePay(out_trade_no);
                 break;
             }
         }
