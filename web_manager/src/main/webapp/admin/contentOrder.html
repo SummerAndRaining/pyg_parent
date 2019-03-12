@@ -25,12 +25,6 @@
     <script type="text/javascript" src="../js/service/contentOrderService.js"></script>
     <script type="text/javascript" src="../js/controller/contentOrderController.js"></script>
 
-	<script type="text/javascript">
-        function exportExcel(){
-            location.href="/exportOrder/exportexcel.do";
-//不能使用ajax,文件下载的请求是不能写在ajax里面的！
-        }
-	</script>
 </head>
 
 <body class="hold-transition skin-red sidebar-mini" ng-app="pinyougou" ng-controller="contentOrderController">
@@ -48,9 +42,13 @@
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-default" title="新建" ng-click="entity={specificationOptionList:[]}" data-toggle="modal" data-target="#editModal" ><i class="fa fa-file-o"></i> 新建</button>
                                         <button type="button" class="btn btn-default" title="删除" ng-click="dele()" ><i class="fa fa-trash-o"></i> 删除</button>
+<<<<<<< HEAD
 										<button class="btn  btn-success btn-sm"  onclick="exportExcel()">
 											<i class="icon-zoom-in align-top bigger-110">导出Excel</i>
 										</button>
+=======
+                                        
+>>>>>>> origin/master
                                         <button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();"><i class="fa fa-refresh"></i> 刷新</button>
                                     </div>
                                 </div>
