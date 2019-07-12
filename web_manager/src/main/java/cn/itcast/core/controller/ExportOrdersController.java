@@ -8,6 +8,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,7 +25,8 @@ public class ExportOrdersController {
     @RequestMapping("/exportexcel")
     public void exportexcel(HttpServletResponse response) throws Exception {
         Workbook wb = new HSSFWorkbook();
-        String headers[] = {"订单名称", "payment", "status", "创建时间", "修改时间", "用户名称", "收件人地址", "收件人电话", "收件人名称", "卖家名称"};
+        String headers[] = {"订单名称", "payment", "status", "创建时间", "修改时间", "用户名称", "收件人地址",
+                "收件人电话", "收件人名称", "卖家名称"};
         int rowIndex = 0;
         Sheet sheet = wb.createSheet();
         Row row = sheet.createRow(rowIndex++);

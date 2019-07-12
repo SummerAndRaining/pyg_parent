@@ -265,7 +265,8 @@ public  class ExcelUtils01 {
             response.reset();//清除缓存
             response.setContentType("octets/stream");
 
-            response.addHeader("Content-Disposition", "attachment;filename=" + new String((filename).getBytes("UTF-8"), "iso8859-1") + ".xls");
+            response.addHeader("Content-Disposition", "attachment;filename=" + new String((filename).
+                    getBytes("UTF-8"), "iso8859-1") + ".xls");
             fos = response.getOutputStream();
 
 

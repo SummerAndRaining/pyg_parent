@@ -35,9 +35,9 @@ public class ExportGoodsController {
 
 
     @RequestMapping("exportexcel")
-    public void  exportexcel(HttpServletResponse response) throws Exception {
+    public void exportexcel(HttpServletResponse response) throws Exception {
         Workbook wb = new HSSFWorkbook();
-        String headers[] = { "id", "卖家名称", "商品名称","品牌id","价格","是否删除" };
+        String headers[] = {"id", "卖家名称", "商品名称", "品牌id", "价格", "是否删除"};
         int rowIndex = 0;
         Sheet sheet = wb.createSheet();
         Row row = sheet.createRow(rowIndex++);
@@ -53,7 +53,8 @@ public class ExportGoodsController {
             row.createCell(3).setCellValue(list.get(i).getBrandId());
             row.createCell(4).setCellValue(list.get(i).getIsDelete());
         }
-        response.setHeader("Content-Disposition", "attachment;filename=" + new String("手动导出excel.xls".getBytes("utf-8"), "iso8859-1"));
+        response.setHeader("Content-Disposition", "attachment;filename=" +
+                new String("手动导出excel.xls".getBytes("utf-8"), "iso8859-1"));
         response.setContentType("application/ynd.ms-excel;charset=UTF-8");
         OutputStream out = response.getOutputStream();
         wb.write(out);
@@ -63,22 +64,7 @@ public class ExportGoodsController {
     }
 
 
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 //        try {
